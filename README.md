@@ -1,14 +1,14 @@
-# 1.8.9ForgeTemplate
+# 1.12.2ForgeTemplate
 
-A fixed and ready to use template for minecraft forge modding on `1.8.9`
+A fixed and ready to use template for minecraft forge modding on `1.12.2`
 with `shadow` plugin integrated including two useful `artifacts`. Tested flawlessly on `IntelliJ IDEA Ultimate 2022.2`
 
 ```js
        java   8
      gradle   3.1
      shadow   2.0.4
-  minecraft   1.8.9
-forgegradle   2.1-SNAPSHOT
+  minecraft   1.12.2
+forgegradle   2.3-SNAPSHOT
 ```
 
 ## Setup
