@@ -58,7 +58,7 @@ public void execute(MinecraftServer server, ICommandSender sender, String[] args
             return;
         }
 
-        sender.sendMessage(new TextComponentString(PREFIX + "The " + method + " distance between (" + x1 + ", " + y1 + ", " + z1 + ") and (" + x2 + ", " + y2 + ", " + z2 + ") is ~" + String.format("%.2f", distance) + " blocks."));
+        sender.sendMessage(new TextComponentString(PREFIX + "The " + method + " distance between (" + x1 + ", " + y1 + ", " + z1 + ") and (" + x2 + ", " + y2 + ", " + z2 + ") is " + String.format("%.2f", distance) + " blocks."));
     } else {
         sender.sendMessage(new TextComponentString(TextFormatting.RED + "Coordinates are out of bounds. " + getUsage(sender)));
     }
