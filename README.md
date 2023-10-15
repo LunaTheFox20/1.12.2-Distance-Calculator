@@ -1,4 +1,4 @@
-# 1.12.2ForgeTemplate
+# 1.12.2-Distance-Calculator
 
 A fixed and ready to use template for minecraft forge modding on `1.12.2`
 with `shadow` plugin integrated including two useful `artifacts`. Tested flawlessly on `IntelliJ IDEA Ultimate 2022.2`
