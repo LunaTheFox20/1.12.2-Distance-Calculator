@@ -7,9 +7,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.Collections;
 import java.util.List;
 
@@ -19,7 +16,6 @@ public class CommandDistance extends CommandBase {
     private static final String PREFIX = "§1§l[Distance]§r: ";
     private static final String ERROR_PREFIX = "§c§l[Error]§r: ";
     private static final String EXAMPLE_PREFIX = "§d§l[Example]§r: ";
-    private static final Logger LOGGER = LogManager.getLogger();
     private static final int REQUIRED_ARGUMENT_COUNT = 7;
 
     @Override
@@ -34,14 +30,12 @@ public class CommandDistance extends CommandBase {
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        LOGGER.info("[DEBUG] This is a debug statement");
         if (args.length != REQUIRED_ARGUMENT_COUNT) {
-            sender.sendMessage(new TextComponentString(EXAMPLE_PREFIX + "Usage: <x1> <y1> <z1> <x2> <y2> <z2> <euclidean/manhattan>\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 euclidean\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 manhattan"));
+            sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Usage: <x1> <y1> <z1> <x2> <y2> <z2> <euclidean/manhattan>\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 euclidean\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 manhattan"));
             return;
         }
 
         try {
-            LOGGER.info("[DEBUG] This is another debug statement");
             double x1 = Double.parseDouble(args[0]);
             double y1 = Double.parseDouble(args[1]);
             double z1 = Double.parseDouble(args[2]);
