@@ -20,6 +20,7 @@ public class CommandDistance extends CommandBase {
     private static final String ERROR_PREFIX = "§c§l[Error]§r: ";
     private static final String EXAMPLE_PREFIX = "§d§l[Example]§r: ";
     private static final int REQUIRED_ARGUMENT_COUNT = 7;
+    private static final int DEFAULT_VALUE = 6;
 
     @Override
     public String getName() {
@@ -32,42 +33,37 @@ public class CommandDistance extends CommandBase {
     }
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-    if (args.length < REQUIRED_ARGUMENT_COUNT) {
-        sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Usage: <x1> <y1> <z1> <x2> <y2> <z2> <euclidean/manhattan>\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 euclidean\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 manhattan"));
+public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+    if (args.length < REQUIRED_ARGUMENT_COUNT - 1 || args.length > REQUIRED_ARGUMENT_COUNT) {
+        sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Usage: <x1> <y1> <z1> <x2> <y2> <z2> [euclidean/manhattan]\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 euclidean\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 manhattan"));
         return;
-    } else if (args.length == REQUIRED_ARGUMENT_COUNT) {
-        args = Arrays.copyOf(args, REQUIRED_ARGUMENT_COUNT);
-        args[6] = "euclidean";
     }
 
-    try {
-        double x1 = Double.parseDouble(args[0]);
-        double y1 = Double.parseDouble(args[1]);
-        double z1 = Double.parseDouble(args[2]);
-        double x2 = Double.parseDouble(args[3]);
-        double y2 = Double.parseDouble(args[4]);
-        double z2 = Double.parseDouble(args[5]);
-        String method = args[6];
+    double x1 = Double.parseDouble(args[0]);
+    double y1 = Double.parseDouble(args[1]);
+    double z1 = Double.parseDouble(args[2]);
+    double x2 = Double.parseDouble(args[3]);
+    double y2 = Double.parseDouble(args[4]);
+    double z2 = Double.parseDouble(args[5]);
+    String method = args.length == REQUIRED_ARGUMENT_COUNT ? args[6] : "euclidean";
 
-        if (isValidCoordinate(x1, y1, z1) && isValidCoordinate(x2, y2, z2)) {
-            double distance = 0.0;
+    if (isValidCoordinate(x1, y1, z1) && isValidCoordinate(x2, y2, z2)) {
+        double distance = 0.0;
 
-            if (method.equalsIgnoreCase("euclidean")) {
-                distance = calculateEuclideanDistance(x1, y1, z1, x2, y2, z2);
-            } else if (method.equalsIgnoreCase("manhattan")) {
-                distance = calculateManhattanDistance(x1, y1, z1, x2, y2, z2);
-            } else {
-                sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Invalid input. Please provide valid numbers for coordinates."));
-                return;
-            }
-            sender.sendMessage(new TextComponentString(PREFIX + "The " + method + " distance between (" + x1 + ", " + y1 + ", " + z1 + ") and (" + x2 + ", " + y2 + ", " + z2 + ") is ~" + String.format("%.2f", distance) + " blocks."));
+        if (method.equalsIgnoreCase("euclidean")) {
+            distance = calculateEuclideanDistance(x1, y1, z1, x2, y2, z2);
+        } else if (method.equalsIgnoreCase("manhattan")) {
+            distance = calculateManhattanDistance(x1, y1, z1, x2, y2, z2);
         } else {
-            sender.sendMessage(new TextComponentString(TextFormatting.RED + "Coordinates are out of bounds. " + getUsage(sender)));
+            sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Invalid input. Please provide valid numbers for coordinates or choose 'euclidean' or 'manhattan' as the last argument."));
+            return;
         }
-    } catch (NumberFormatException e) {
-        sender.sendMessage(new TextComponentString(TextFormatting.RED + "Invalid coordinates. " + getUsage(sender)));
-        }
+
+        sender.sendMessage(new TextComponentString(PREFIX + "The " + method + " distance between (" + x1 + ", " + y1 + ", " + z1 + ") and (" + x2 + ", " + y2 + ", " + z2 + ") is ~" + String.format("%.2f", distance) + " blocks."));
+    } else {
+        sender.sendMessage(new TextComponentString(TextFormatting.RED + "Coordinates are out of bounds. " + getUsage(sender)));
+    }
+
     }
 
     private boolean isValidCoordinate(double x, double y, double z) {
