@@ -1,16 +1,18 @@
 [
-{
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
-  "url": "",
-  "updateUrl": "",
-  "authorList": ["ExampleDude", "dxxxxy"],
-  "credits": "The Forge and FML guys, for making this example. dxxxxy for fixing it.",
-  "logoFile": "",
-  "screenshots": [],
-  "dependencies": []
-}
+  {
+    "modid": "distance_calculator",
+    "name": "Distance Calculator",
+    "description": "This is a Distance Calculator. Nothing too special :3",
+    "version": "mc1.12.2-1.0.0",
+    "mcversion": "1.12.2",
+    "url": "https://github.com/LunaTheFox/1.12.2ForgeTemplate",
+    "updateUrl": "",
+    "authorList": [
+      "LunaTheFox20"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
 ]
