@@ -20,7 +20,6 @@ public class CommandDistance extends CommandBase {
     private static final String ERROR_PREFIX = "§c§l[Error]§r: ";
     private static final String EXAMPLE_PREFIX = "§d§l[Example]§r: ";
     private static final int REQUIRED_ARGUMENT_COUNT = 7;
-    private static final int DEFAULT_VALUE = 6;
 
     @Override
     public String getName() {
