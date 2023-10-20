@@ -7,11 +7,13 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 
-import java.util.Collections;
-import java.util.Arrays;
-import java.util.List;
-
 import com.google.common.collect.Lists;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Arrays;
 
 public class CommandDistance extends CommandBase {
 
@@ -19,6 +21,14 @@ public class CommandDistance extends CommandBase {
     private static final String ERROR_PREFIX = "§c§l[Error]§r: ";
     private static final String EXAMPLE_PREFIX = "§d§l[Example]§r: ";
     private static final int REQUIRED_ARGUMENT_COUNT = 7;
+
+    private static final String[] VALID_METHODS = {"euclidean", "manhattan"};
+
+    private static final Map<String, DistanceCalculator> CALCULATORS = new HashMap<>();
+    static {
+        CALCULATORS.put("euclidean", CommandDistance::calculateEuclideanDistance);
+        CALCULATORS.put("manhattan", CommandDistance::calculateManhattanDistance);
+    }
 
     @Override
     public String getName() {
@@ -32,56 +42,65 @@ public class CommandDistance extends CommandBase {
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-    if (args.length < REQUIRED_ARGUMENT_COUNT - 1 || args.length > REQUIRED_ARGUMENT_COUNT) {
-        sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Usage: <x1> <y1> <z1> <x2> <y2> <z2> [euclidean/manhattan]\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 euclidean\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 manhattan"));
-        return;
-    }
+        if (args.length < REQUIRED_ARGUMENT_COUNT - 1 || args.length > REQUIRED_ARGUMENT_COUNT) {
+            sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Usage: <x1> <y1> <z1> <x2> <y2> <z2> [euclidean/manhattan]\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 euclidean\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 manhattan"));
+            return;
+        }
 
-    double x1 = Double.parseDouble(args[0]);
-    double y1 = Double.parseDouble(args[1]);
-    double z1 = Double.parseDouble(args[2]);
-    double x2 = Double.parseDouble(args[3]);
-    double y2 = Double.parseDouble(args[4]);
-    double z2 = Double.parseDouble(args[5]);
-    String method = args.length == REQUIRED_ARGUMENT_COUNT ? args[6] : "euclidean";
-
-    if (isValidCoordinate(x1, y1, z1) && isValidCoordinate(x2, y2, z2)) {
-        double distance = 0.0;
-
-        switch (method.toLowerCase()) {
-            case "euclidean":
-                distance = calculateEuclideanDistance(x1, y1, z1, x2, y2, z2);
-                break;
-            case "manhattan":
-                distance = calculateManhattanDistance(x1, y1, z1, x2, y2, z2);
-                break;
-            default:
-                sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Invalid input. Please provide valid numbers for coordinates or choose 'euclidean' or 'manhattan' as the last argument."));
+        double[] coordinates = new double[6];
+        for (int i = 0; i < 6; i++) {
+            try {
+                coordinates[i] = Double.parseDouble(args[i]);
+            } catch (NumberFormatException e) {
+                sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Invalid input. Please provide valid numbers for coordinates."));
                 return;
             }
-        
-        sender.sendMessage(new TextComponentString(String.format("%sThe %s distance between (%.2f, %.2f, %.2f) and (%.2f, %.2f, %.2f) is %.2f blocks.", PREFIX, method, x1, y1, z1, x2, y2, z2, distance)));
-    } else {
-        sender.sendMessage(new TextComponentString(TextFormatting.RED + "Coordinates are out of bounds. " + getUsage(sender)));
+        }
+
+        String method = args.length == REQUIRED_ARGUMENT_COUNT ? args[6] : "euclidean";
+        method = method.toLowerCase();
+
+        if (isValidCoordinate(coordinates)) {
+            if (CALCULATORS.containsKey(method)) {
+                double distance = CALCULATORS.get(method).calculate(coordinates);
+                sender.sendMessage(new TextComponentString(String.format("%sThe %s distance between (%.2f, %.2f, %.2f) and (%.2f, %.2f, %.2f) is %.2f blocks.", PREFIX, method, coordinates[0], coordinates[1], coordinates[2], coordinates[3], coordinates[4], coordinates[5], distance)));
+            } else {
+                sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Invalid method. Please choose 'euclidean' or 'manhattan' as the last argument."));
+            }
+        } else {
+            sender.sendMessage(new TextComponentString(TextFormatting.RED + "Coordinates are out of bounds. " + getUsage(sender)));
+        }
     }
 
+    private boolean isValidCoordinate(double[] coordinates) {
+        double x1 = coordinates[0];
+        double y1 = coordinates[1];
+        double z1 = coordinates[2];
+        double x2 = coordinates[3];
+        double y2 = coordinates[4];
+        double z2 = coordinates[5];
+
+        return x1 >= -30_000_000 && x1 <= 30_000_000 &&
+                y1 >= -319 && y1 <= 319 &&
+                z1 >= -30_000_000 && z1 <= 30_000_000 &&
+                x2 >= -30_000_000 && x2 <= 30_000_000 &&
+                y2 >= -319 && y2 <= 319 &&
+                z2 >= -30_000_000 && z2 <= 30_000_000;
     }
 
-    private boolean isValidCoordinate(double x, double y, double z) {
-        return x >= -30_000_000 && x <= 30_000_000 &&
-               y >= -319 && y <= 319 &&
-               z >= -30_000_000 && z <= 30_000_000;
+    private interface DistanceCalculator {
+        double calculate(double[] coordinates);
     }
 
-    private double calculateEuclideanDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
-        double dx = x2 - x1;
-        double dy = y2 - y1;
-        double dz = z2 - z1;
+    private static double calculateEuclideanDistance(double[] coordinates) {
+        double dx = coordinates[3] - coordinates[0];
+        double dy = coordinates[4] - coordinates[1];
+        double dz = coordinates[5] - coordinates[2];
         return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
-    private double calculateManhattanDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
-        return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
+    private static double calculateManhattanDistance(double[] coordinates) {
+        return Math.abs(coordinates[3] - coordinates[0]) + Math.abs(coordinates[4] - coordinates[1]) + Math.abs(coordinates[5] - coordinates[2]);
     }
 
     @Override
@@ -92,19 +111,15 @@ public class CommandDistance extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, net.minecraft.util.math.BlockPos targetPos) {
         List<String> completions = Lists.newArrayList();
-        switch (args.length) {
-            case 7:
-                String arg = args[6].toLowerCase();
-                if ("e".startsWith(arg)) {
-                    completions.add("euclidean");
+        if (args.length == 7) {
+            String arg = args[6].toLowerCase();
+            for (String method : VALID_METHODS) {
+                if (method.startsWith(arg)) {
+                    completions.add(method);
                 }
-                if ("m".startsWith(arg)) {
-                    completions.add("manhattan");
-                }
-                break;
-            case 8:
-                completions.addAll(Arrays.asList("<x1>", "<y1>", "<z1>", "<x2>", "<y2>", "<z2>"));
-                break;
+            }
+        } else if (args.length == 8) {
+            completions.addAll(Arrays.asList("<x1>", "<y1>", "<z1>", "<x2>", "<y2>", "<z2>"));
         }
         return completions;
     }
