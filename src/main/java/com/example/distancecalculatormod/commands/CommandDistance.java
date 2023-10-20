@@ -92,16 +92,19 @@ public class CommandDistance extends CommandBase {
     @Override
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, net.minecraft.util.math.BlockPos targetPos) {
         List<String> completions = Lists.newArrayList();
-        if (args.length == 7) {
-            String arg = args[6].toLowerCase();
-            if ("e".startsWith(arg)) {
-                completions.add("euclidean");
-            }
-            if ("m".startsWith(arg)) {
-                completions.add("manhattan");
-            }
-        } else if (args.length == 8) {
-            completions.addAll(Arrays.asList("<x1>", "<y1>", "<z1>", "<x2>", "<y2>", "<z2>"));
+        switch (args.length) {
+            case 7:
+                String arg = args[6].toLowerCase();
+                if ("e".startsWith(arg)) {
+                    completions.add("euclidean");
+                }
+                if ("m".startsWith(arg)) {
+                    completions.add("manhattan");
+                }
+                break;
+            case 8:
+                completions.addAll(Arrays.asList("<x1>", "<y1>", "<z1>", "<x2>", "<y2>", "<z2>"));
+                break;
         }
         return completions;
     }
