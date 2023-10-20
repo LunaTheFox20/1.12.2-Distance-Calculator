@@ -15,7 +15,6 @@ import com.google.common.collect.Lists;
 
 public class CommandDistance extends CommandBase {
 
-    // Constants for chat message prefixes, required argument count and the Logger initialization
     private static final String PREFIX = "§1§l[Distance]§r: ";
     private static final String ERROR_PREFIX = "§c§l[Error]§r: ";
     private static final String EXAMPLE_PREFIX = "§d§l[Example]§r: ";
@@ -32,7 +31,7 @@ public class CommandDistance extends CommandBase {
     }
 
     @Override
-public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
     if (args.length < REQUIRED_ARGUMENT_COUNT - 1 || args.length > REQUIRED_ARGUMENT_COUNT) {
         sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Usage: <x1> <y1> <z1> <x2> <y2> <z2> [euclidean/manhattan]\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 euclidean\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 manhattan"));
         return;
@@ -49,16 +48,19 @@ public void execute(MinecraftServer server, ICommandSender sender, String[] args
     if (isValidCoordinate(x1, y1, z1) && isValidCoordinate(x2, y2, z2)) {
         double distance = 0.0;
 
-        if (method.equalsIgnoreCase("euclidean")) {
-            distance = calculateEuclideanDistance(x1, y1, z1, x2, y2, z2);
-        } else if (method.equalsIgnoreCase("manhattan")) {
-            distance = calculateManhattanDistance(x1, y1, z1, x2, y2, z2);
-        } else {
-            sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Invalid input. Please provide valid numbers for coordinates or choose 'euclidean' or 'manhattan' as the last argument."));
-            return;
-        }
-
-        sender.sendMessage(new TextComponentString(PREFIX + "The " + method + " distance between (" + x1 + ", " + y1 + ", " + z1 + ") and (" + x2 + ", " + y2 + ", " + z2 + ") is " + String.format("%.2f", distance) + " blocks."));
+        switch (method.toLowerCase()) {
+            case "euclidean":
+                distance = calculateEuclideanDistance(x1, y1, z1, x2, y2, z2);
+                break;
+            case "manhattan":
+                distance = calculateManhattanDistance(x1, y1, z1, x2, y2, z2);
+                break;
+            default:
+                sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Invalid input. Please provide valid numbers for coordinates or choose 'euclidean' or 'manhattan' as the last argument."));
+                return;
+            }
+        
+        sender.sendMessage(new TextComponentString(String.format("%sThe %s distance between (%.2f, %.2f, %.2f) and (%.2f, %.2f, %.2f) is %.2f blocks.", PREFIX, method, x1, y1, z1, x2, y2, z2, distance)));
     } else {
         sender.sendMessage(new TextComponentString(TextFormatting.RED + "Coordinates are out of bounds. " + getUsage(sender)));
     }
@@ -72,7 +74,6 @@ public void execute(MinecraftServer server, ICommandSender sender, String[] args
     }
 
     private double calculateEuclideanDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
-        // Calculate Euclidean distance
         double dx = x2 - x1;
         double dy = y2 - y1;
         double dz = z2 - z1;
@@ -80,7 +81,6 @@ public void execute(MinecraftServer server, ICommandSender sender, String[] args
     }
 
     private double calculateManhattanDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
-        // Calculate Manhattan distance
         return Math.abs(x2 - x1) + Math.abs(y2 - y1) + Math.abs(z2 - z1);
     }
 
