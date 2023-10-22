@@ -30,6 +30,11 @@ public class CommandDistance extends CommandBase {
         CALCULATORS.put("manhattan", CommandDistance::calculateManhattanDistance);
     }
 
+    private static final double MIN_XZ = -30_000_000;
+    private static final double MAX_XZ = 30_000_000;
+    private static final double MIN_Y = -319;
+    private static final double MAX_Y = 319;
+
     @Override
     public String getName() {
         return "distance";
@@ -37,55 +42,55 @@ public class CommandDistance extends CommandBase {
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "Usage: /distance <x1> <y1> <z1> <x2> <y2> <z2> <euclidean/manhattan>";
+        return "Usage: /distance <x1> <y1> <z1> <x2> <y2> <z2> [euclidean/manhattan]";
     }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length < REQUIRED_ARGUMENT_COUNT - 1 || args.length > REQUIRED_ARGUMENT_COUNT) {
-            sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Usage: <x1> <y1> <z1> <x2> <y2> <z2> [euclidean/manhattan]\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 euclidean\n" + EXAMPLE_PREFIX + " /distance 392 -43 81 48 293 58 manhattan"));
+            String errorMessage = String.format("%sUsage: <x1> <y1> <z1> <x2> <y2> <z2> [euclidean/manhattan]\n%s /distance 392 -43 81 48 293 58 euclidean\n%s /distance 392 -43 81 48 293 58 manhattan",
+                ERROR_PREFIX, EXAMPLE_PREFIX, EXAMPLE_PREFIX);
+            sender.sendMessage(new TextComponentString(errorMessage));
             return;
         }
-
+    
         double[] coordinates = new double[6];
         for (int i = 0; i < 6; i++) {
             try {
                 coordinates[i] = Double.parseDouble(args[i]);
             } catch (NumberFormatException e) {
-                sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Invalid input. Please provide valid numbers for coordinates."));
+                String errorMessage = String.format("%sInvalid input. Please provide valid numbers for coordinates.", ERROR_PREFIX);
+                sender.sendMessage(new TextComponentString(errorMessage));
                 return;
             }
         }
-
+    
         String method = args.length == REQUIRED_ARGUMENT_COUNT ? args[6] : "euclidean";
         method = method.toLowerCase();
-
+    
         if (isValidCoordinate(coordinates)) {
             if (CALCULATORS.containsKey(method)) {
                 double distance = CALCULATORS.get(method).calculate(coordinates);
-                sender.sendMessage(new TextComponentString(String.format("%sThe %s distance between (%.2f, %.2f, %.2f) and (%.2f, %.2f, %.2f) is %.2f blocks.", PREFIX, method, coordinates[0], coordinates[1], coordinates[2], coordinates[3], coordinates[4], coordinates[5], distance)));
+                String message = String.format("%sThe %s distance between (%.2f, %.2f, %.2f) and (%.2f, %.2f, %.2f) is %.2f blocks.",
+                    PREFIX, method, coordinates[0], coordinates[1], coordinates[2], coordinates[3], coordinates[4], coordinates[5], distance);
+                sender.sendMessage(new TextComponentString(message));
             } else {
-                sender.sendMessage(new TextComponentString(ERROR_PREFIX + "Invalid method. Please choose 'euclidean' or 'manhattan' as the last argument."));
+                String errorMessage = String.format("%sInvalid method. Please choose 'euclidean' or 'manhattan' as the last argument.", ERROR_PREFIX);
+                sender.sendMessage(new TextComponentString(errorMessage));
             }
         } else {
-            sender.sendMessage(new TextComponentString(TextFormatting.RED + "Coordinates are out of bounds. " + getUsage(sender)));
+            String errorMessage = String.format("%sCoordinates are out of bounds. %s", TextFormatting.RED, getUsage(sender));
+            sender.sendMessage(new TextComponentString(errorMessage));
         }
     }
 
     private boolean isValidCoordinate(double[] coordinates) {
-        double x1 = coordinates[0];
-        double y1 = coordinates[1];
-        double z1 = coordinates[2];
-        double x2 = coordinates[3];
-        double y2 = coordinates[4];
-        double z2 = coordinates[5];
-
-        return x1 >= -30_000_000 && x1 <= 30_000_000 &&
-                y1 >= -319 && y1 <= 319 &&
-                z1 >= -30_000_000 && z1 <= 30_000_000 &&
-                x2 >= -30_000_000 && x2 <= 30_000_000 &&
-                y2 >= -319 && y2 <= 319 &&
-                z2 >= -30_000_000 && z2 <= 30_000_000;
+        for (double value : coordinates) {
+            if (value < MIN_XZ || value > MAX_XZ) {
+                return false;
+            }
+        }
+        return coordinates[1] >= MIN_Y && coordinates[1] <= MAX_Y;
     }
 
     private interface DistanceCalculator {
